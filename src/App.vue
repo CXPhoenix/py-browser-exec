@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, reactive } from "vue";
 import { VAceEditor } from "vue3-ace-editor";
+import Loading from "./components/Loading.vue";
 import ace from "ace-builds";
 
 ace.config.set("basePath", "../node_modules/ace-builds/src-noconflict");
@@ -8,9 +9,12 @@ ace.config.set("basePath", "../node_modules/ace-builds/src-noconflict");
 const editorInit = () => {};
 
 const show = ref();
-const editor = reactive({ code: "", result: "", show: "" });
+const editor = reactive({ code: "", result: "", show: "", isLoding: false });
 
 const runPy = async (code) => {
+  editor.isLoding = true;
+  editor.show = "";
+  editor.result = "";
   const pyodide = await loadPyodide({
     stdout: (result) => {
       editor.show += result + "<br />";
@@ -25,6 +29,7 @@ const runPy = async (code) => {
   // });
 
   let system = await pyodide.runPython(code);
+  editor.isLoding = false;
   return system;
 };
 
@@ -54,7 +59,8 @@ onMounted(async () => {});
         value="執行"
       />
     </div>
-    <div class="">
+    <div class="relative p-3">
+      <Loading class="absolute inset-0" v-if="editor.isLoding" />
       <p class="">結果：</p>
       <div
         class="max-h-80 min-h-[5rem] w-full overflow-y-auto border-2 border-black"
